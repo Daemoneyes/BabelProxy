@@ -1,6 +1,4 @@
-package BabelProxy
-
-import "fmt"
+package PlatformProvider
 
 type PlatformProvider interface {
 	init() *PlatformProvider

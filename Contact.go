@@ -47,12 +47,13 @@ func (contact *Contact) getcallId() string {
 	return contact.callId
 }
 
-func (contact *Contact) getstartTime() time {
+func (contact *Contact) getstartTime() time.Time {
 	return contact.startTime
 }
 
-func createContact(customerId, customerName, agentId, agentName, callId, string) Contact {
+func createContact(customerId, customerName, agentId, agentName, callId string) *Contact {
 	startTime := time.Now()
-	msgList = make([]Message, 10)
+	msgList := make([]Message, 10)
 	contact := Contact{customerId, customerName, agentId, agentName, msgList, startTime, callId}
+	return &contact
 }
