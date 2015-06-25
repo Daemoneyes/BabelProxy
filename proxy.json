@@ -1,3 +1,4 @@
 {
-    "test": 1234
+    "ip": "localhost"
+	"port" : 3200
 }
