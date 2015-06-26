@@ -1,11 +1,18 @@
 package PlatformProvider
 
+import "BabelProxy/Protocol"
+
+
+
 type PlatformProvider interface {
-	init() *PlatformProvider
-	getName() string
-	getMeta() map[string]string
-	reConfigure() bool
-	sendMsg(msg string) bool
-	getMsg() string
-	getPlatform() *PlatformProvider
+	GetName() string
+	GetMeta() map[string]string
+	ReConfigure(f string) (bool,error)
+	SendMsg(msg Protocol.Message) (bool,error)
+	GetMsg() string
+	GetPlatform() *PlatformProvider
 }
+
+
+
+

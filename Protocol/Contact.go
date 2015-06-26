@@ -1,4 +1,4 @@
-package BabelProxy
+package Protocol
 
 import (
 	"errors"

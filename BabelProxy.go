@@ -4,6 +4,7 @@ import (
 	"BabelProxy/Bots"
 	"BabelProxy/CCProvider"
 	"BabelProxy/PlatformProvider"
+	"BabelProxy/Protocol"
 	"errors"
 	"fmt"
 	"github.com/spf13/viper"
