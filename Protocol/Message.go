@@ -1,22 +1,37 @@
 package Protocol
 
+import "time"
+
+var MsgTypeList = []string{"audio", "video", "text", "image"}
+
 type Message struct {
-	msgBody string
-	sender  string
+	msgBody       string
+	sender        string
+	receiver      string
+	msgType       string
+	msgCreateTime time.Time
 }
 
-func (msg *Message) getmsgBody() string {
+func (msg *Message) GetMsgBody() string {
 	return msg.msgBody
 }
 
-func (msg *Message) getsender() string {
+func (msg *Message) GetSender() string {
 	return msg.sender
 }
 
-func (msg *Message) setmsgBody(msbBody string) {
-	msg.msgBody = msbBody
+func (msg *Message) GetMsgType() string {
+	return msg.msgType
 }
 
-func (msg *Message) setsender(sender string) {
-	msg.sender = sender
+func (msg *Message) GetReceiver() string {
+	return msg.receiver
+}
+
+func (msg *Message) GetMsgCreateTime() time.Time {
+	return msg.msgCreateTime
+}
+
+func CreateMsg(msgBody, sender, receiver, msgType string, msgCreateTime time.Time) *Message {
+	return &Message{msgBody, sender, receiver, msgType, msgCreateTime}
 }

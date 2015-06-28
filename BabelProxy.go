@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	_ "log"
+	"net/http"
 	_ "os"
 	_ "path/filepath"
 )
@@ -19,7 +20,7 @@ type BabelProxy struct {
 	platformProviderInstanceList []PlatformProvider.PlatformProvider
 	meta                         map[string]string
 	bot                          Bots.Bot
-	contactRecordList            []*Contact
+	contactRecordList            []*Protocol.Contact
 }
 
 func (bp *BabelProxy) reloadCOnfiguration() {
@@ -34,7 +35,7 @@ func (bp *BabelProxy) processMsg() {
 
 }
 
-func (bp *BabelProxy) findContact(callId string) *Contact {
+func (bp *BabelProxy) findContact(callId string) *Protocol.Contact {
 	return nil
 }
 
@@ -56,7 +57,17 @@ func createProxy(f string) (*BabelProxy, error) {
 	var bp = &BabelProxy{}
 	bp.ip = viper.GetString("ip")
 	bp.port = viper.GetString("port")
+	bp.platformProviderInstanceList = make([]PlatformProvider.PlatformProvider, 10)
+	bp.platformProviderInstanceList = append(bp.platformProviderInstanceList, PlatformProvider.WechatPlatformProviderInstance)
 	return bp, nil
 }
 
 var Bp, err = createProxy("./proxy.json")
+
+func (bp *BabelProxy) Run() {
+	for _, pp := range bp.platformProviderInstanceList {
+		url, _ := pp.GetMeta()["url"]
+		http.HandleFunc(url, pp.GetMsg)
+	}
+	http.ListenAndServe(":10000", nil)
+}

@@ -1,6 +1,16 @@
 # BabelProxy
-A test Unified Proxy for Convert WeChat/FB messager/Google Hangout.
-Using Golang
+Golang Based Universe Proxy.
+Order to research proper way to Communicate with 
+Different Messager Providers
+
+
+
+
+
+
+
+
+
 
 
 
