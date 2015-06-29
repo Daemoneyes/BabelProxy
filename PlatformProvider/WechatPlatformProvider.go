@@ -1,6 +1,7 @@
 package PlatformProvider
 
 import (
+	"BabelProxy/DataShare"
 	"BabelProxy/Protocol"
 	"errors"
 	"fmt"
@@ -35,8 +36,7 @@ func (wPP *WechatPlatformProvider) SendMsg(msg Protocol.Message) (bool, error) {
 	return true, nil
 }
 
-func (wPP *WechatPlatformProvider) GetMsg(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+func (wPP *WechatPlatformProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	content, err := xmlpath.Parse(r.Body)
 	if err != nil {
 
@@ -56,13 +56,15 @@ func (wPP *WechatPlatformProvider) GetMsg(w http.ResponseWriter, r *http.Request
 			msgBody, _ := msgBodyPath.String(content)
 			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "text", createTime)
 			fmt.Println(newMsg.GetMsgBody())
+			DataShare.MsgQ <- newMsg
 		default:
 			fmt.Println("default choice")
 		}
 	}
 }
 
-func createWechatPlatformProvider(f string) (*WechatPlatformProvider, error) {
+func CreateWechatPlatformProvider(f string) (*WechatPlatformProvider, error) {
+	fmt.Println("Start Creating WeChatPlatformProvider")
 	viper.SetConfigFile(f)
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -76,7 +78,7 @@ func createWechatPlatformProvider(f string) (*WechatPlatformProvider, error) {
 	wPP.meta["appId"] = viper.GetString("appId")
 	wPP.meta["appsecret"] = viper.GetString("appsecret")
 	wPP.meta["url"] = viper.GetString("url")
+	fmt.Println("Finish Creating WeChatPlatformProvider")
+
 	return wPP, nil
 }
-
-var WechatPlatformProviderInstance, err = createWechatPlatformProvider("wechat.json")

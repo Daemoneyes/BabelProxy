@@ -10,5 +10,5 @@ type PlatformProvider interface {
 	GetMeta() map[string]string
 	ReConfigure(f string) (bool, error)
 	SendMsg(msg Protocol.Message) (bool, error)
-	GetMsg(w http.ResponseWriter, r *http.Request)
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
