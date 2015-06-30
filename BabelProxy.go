@@ -16,12 +16,13 @@ import (
 )
 
 type BabelProxy struct {
-	ip, port                     string
-	cCProviderInstance           CCProvider.CCProvider
+	ip, port           string
+	cCProviderInstance CCProvider.CCProvider
+	// Interface is a pointer , so dont need to use interface pointer to get struct pointer
 	platformProviderInstanceList []PlatformProvider.PlatformProvider
 	meta                         map[string]string
 	bot                          Bots.Bot
-	contactRecordList            []*Protocol.Contact
+	contactRecordList            []Protocol.Contact
 }
 
 func (bp *BabelProxy) reloadCOnfiguration() {
@@ -51,10 +52,7 @@ func (bp *BabelProxy) GetIp() string {
 
 func (bp *BabelProxy) Run() {
 	fmt.Println("Start Listening at Port 10000")
-
 	for _, pp := range bp.platformProviderInstanceList {
-		fmt.Println(pp.GetMeta())
-		fmt.Println("1")
 		url, _ := pp.GetMeta()["url"]
 		http.Handle(url, pp)
 	}
@@ -73,7 +71,7 @@ func CreateProxy(f string) (*BabelProxy, error) {
 	var bp = &BabelProxy{}
 	bp.ip = viper.GetString("ip")
 	bp.port = viper.GetString("port")
-	bp.platformProviderInstanceList = make([]PlatformProvider.PlatformProvider, 10)
+	bp.platformProviderInstanceList = make([]PlatformProvider.PlatformProvider, 0)
 	wechatPlatformProvider, err := PlatformProvider.CreateWechatPlatformProvider("./wechat.json")
 	bp.platformProviderInstanceList = append(bp.platformProviderInstanceList, wechatPlatformProvider)
 	fmt.Println("Creating Proxy Finished")
