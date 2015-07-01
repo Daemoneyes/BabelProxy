@@ -3,8 +3,9 @@ package PlatformProvider
 import (
 	"BabelProxy/DataShare"
 	"BabelProxy/Protocol"
+	"BabelProxy/Utils"
 	"errors"
-	"fmt"
+	_ "fmt"
 	"github.com/spf13/viper"
 	_ "io/ioutil"
 	"launchpad.net/xmlpath"
@@ -39,9 +40,8 @@ func (wPP *WechatPlatformProvider) SendMsg(msg Protocol.Message) (bool, error) {
 func (wPP *WechatPlatformProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	content, err := xmlpath.Parse(r.Body)
 	if err != nil {
-
+		Utils.Logger.Println("Cann't Parse Message from ", r.URL)
 	} else {
-
 		senderPath := xmlpath.MustCompile("/xml/FromUserName")
 		createTimePath := xmlpath.MustCompile("/xml/CreateTime")
 		sender, _ := senderPath.String(content)
@@ -51,24 +51,24 @@ func (wPP *WechatPlatformProvider) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		msgTypePath := xmlpath.MustCompile("/xml/MsgType")
 		switch msgType, _ := msgTypePath.String(content); msgType {
 		case "text":
-			fmt.Println("get a text")
+			Utils.Logger.Println("Get a Text From ", r.URL)
 			msgBodyPath := xmlpath.MustCompile("/xml/Content")
 			msgBody, _ := msgBodyPath.String(content)
 			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "text", createTime)
-			fmt.Println(newMsg.GetMsgBody())
+			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		default:
-			fmt.Println("default choice")
+			Utils.Logger.Println("default choice")
 		}
 	}
 }
 
 func CreateWechatPlatformProvider(f string) (*WechatPlatformProvider, error) {
-	fmt.Println("Start Creating WeChatPlatformProvider")
+	Utils.Logger.Println("Start Creating WeChatPlatformProvider")
 	viper.SetConfigFile(f)
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Cannot Load Wechat Configure File at " + f)
+		Utils.Logger.Println("Cannot Load Wechat Configure File at " + f)
 		return &WechatPlatformProvider{}, errors.New("Load Configuration Failed Error")
 	}
 	var wPP = &WechatPlatformProvider{}
@@ -78,7 +78,7 @@ func CreateWechatPlatformProvider(f string) (*WechatPlatformProvider, error) {
 	wPP.meta["appId"] = viper.GetString("appId")
 	wPP.meta["appsecret"] = viper.GetString("appsecret")
 	wPP.meta["url"] = viper.GetString("url")
-	fmt.Println("Finish Creating WeChatPlatformProvider")
+	Utils.Logger.Println("Finish Creating WeChatPlatformProvider")
 
 	return wPP, nil
 }

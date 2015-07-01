@@ -6,6 +6,7 @@ import (
 	_ "BabelProxy/DataShare"
 	"BabelProxy/PlatformProvider"
 	"BabelProxy/Protocol"
+	"BabelProxy/Utils"
 	"errors"
 	"fmt"
 	"github.com/spf13/viper"
@@ -51,7 +52,8 @@ func (bp *BabelProxy) GetIp() string {
 }
 
 func (bp *BabelProxy) Run() {
-	fmt.Println("Start Listening at Port 10000")
+	fmt.Println("Server Start Running, Check Log to get More detail")
+	Utils.Logger.Println("Start Listening at Port 10000")
 	for _, pp := range bp.platformProviderInstanceList {
 		url, _ := pp.GetMeta()["url"]
 		http.Handle(url, pp)
@@ -61,11 +63,11 @@ func (bp *BabelProxy) Run() {
 }
 
 func CreateProxy(f string) (*BabelProxy, error) {
-	fmt.Println("Start Creating Proxy....")
+	Utils.Logger.Println("Start Creating Proxy....")
 	viper.SetConfigFile(f)
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Println("Cannot Load Configure File at " + f)
+		Utils.Logger.Println("Cannot Load Configure File at " + f)
 		return nil, errors.New("Load Configuration Failed Error")
 	}
 	var bp = &BabelProxy{}
@@ -74,6 +76,6 @@ func CreateProxy(f string) (*BabelProxy, error) {
 	bp.platformProviderInstanceList = make([]PlatformProvider.PlatformProvider, 0)
 	wechatPlatformProvider, err := PlatformProvider.CreateWechatPlatformProvider("./wechat.json")
 	bp.platformProviderInstanceList = append(bp.platformProviderInstanceList, wechatPlatformProvider)
-	fmt.Println("Creating Proxy Finished")
+	Utils.Logger.Println("Creating Proxy Finished")
 	return bp, nil
 }
