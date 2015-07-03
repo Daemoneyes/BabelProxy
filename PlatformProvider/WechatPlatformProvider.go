@@ -5,6 +5,7 @@ import (
 	"BabelProxy/Protocol"
 	"BabelProxy/Utils"
 	"errors"
+	"io"
 	_ "fmt"
 	"github.com/spf13/viper"
 	_ "io/ioutil"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+ 	json "github.com/bitly/go-simplejson"
 )
 
 var SupportMsgType = []string{"text", "image", "voice", "video", "shortvideo", "location"}
@@ -36,6 +38,18 @@ func (wPP *WechatPlatformProvider) ReConfigure(f string) (bool, error) {
 func (wPP *WechatPlatformProvider) SendMsg(msg Protocol.Message) (bool, error) {
 	return true, nil
 }
+
+func (wPP *WechatPlatformProvider) updateToken(jsonstr io.Reader) (bool){
+	js,_:= json.NewFromReader(jsonstr)
+	value,flag:= js.CheckGet("access_token")
+	if flag{
+		wPP.meta["access_token"] = value.MustString()
+		return true
+	}
+	return false
+}
+
+
 
 func (wPP *WechatPlatformProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	content, err := xmlpath.Parse(r.Body)
