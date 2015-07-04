@@ -2,7 +2,7 @@ package Protocol
 
 import "time"
 
-var MsgTypeList = []string{"audio", "video", "text", "image"}
+var MsgTypeList = []string{"audio", "video", "text", "image","conf"}
 
 type Message struct {
 	msgBody       string
