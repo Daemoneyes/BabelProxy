@@ -10,6 +10,7 @@ type Message struct {
 	receiver      string
 	msgType       string
 	msgCreateTime time.Time
+	msgMeta       map[string]string
 }
 
 func (msg *Message) GetMsgBody() string {
@@ -32,6 +33,13 @@ func (msg *Message) GetMsgCreateTime() time.Time {
 	return msg.msgCreateTime
 }
 
-func CreateMsg(msgBody, sender, receiver, msgType string, msgCreateTime time.Time) *Message {
-	return &Message{msgBody, sender, receiver, msgType, msgCreateTime}
+
+func (msg *Message) GetMsgMeta() map[string]string{
+	return msg.msgMeta
+}
+
+
+
+func CreateMsg(msgBody, sender, receiver, msgType string, msgCreateTime time.Time,msgMeta map[string]string) *Message {
+	return &Message{msgBody, sender, receiver, msgType, msgCreateTime,msgMeta}
 }

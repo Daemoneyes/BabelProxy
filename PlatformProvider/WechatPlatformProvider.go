@@ -14,16 +14,30 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"encoding/xml"
 )
 
-type basicResponse{
-	
+type BasicResponse struct{
+	xml xml.Name `xml:"xml"`
+	toUserName string `xml:"ToUserName"`
+	fromUserName string `xml:"FromUserName"`
+	createTime int64 `xml:"CreateTime"`
+	msgType string `xml:"MsgType"`
+
 }
 
 
+type TextResponse struct {
+	br BasicResponse
+	content string `xml:"Content"`
 
+	
+}
 
-
+type VideoPart struct{
+	xml xml.Name `xml:"Image"`
+	mediaId string`xml:"MediaId"`
+}
 
 
 
@@ -47,13 +61,39 @@ func (wPP *WechatPlatformProvider) ReConfigure(f string) (bool, error) {
 func (wPP *WechatPlatformProvider) SendMsg(msg Protocol.Message) bool {
 	switch msg.GetMsgType() {
 	case "text":
-		
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},msg.GetMsgBody()}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
+		return true
 	case "image":
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},msg.GetMsgBody()}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
+		return true
 	case "voice":
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},msg.GetMsgBody()}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
+		return true
 	case "video":
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},msg.GetMsgBody()}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
+		return true
 	case "news":
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},msg.GetMsgBody()}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
+		return true
 	case "resp":
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},msg.GetMsgBody()}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
+		return true
 	default:
+		tR:= TextResponse{BasicResponse{"xml",msg.GetSender(),wPP.GetMeta()["account"],time.Now().Unix(),"text"},"Cannot recongize your msg"}
+		xmlstring,_:=xml.Marshal(tR)
+		Utils.Logger.Println(xmlstring)
 		return true
 
 	}
@@ -100,42 +140,66 @@ func (wPP *WechatPlatformProvider) ServeHTTP(w http.ResponseWriter, r *http.Requ
 			Utils.Logger.Println("Get a Text From ", r.URL)
 			msgBodyPath := xmlpath.MustCompile("/xml/Content")
 			msgBody, _ := msgBodyPath.String(content)
-			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "text", createTime)
+			msgMeta := make(map[string]string)
+			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "text", createTime,msgMeta)
 			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		case "image":
 			Utils.Logger.Println("Get a Image From ", r.URL)
-			msgBodyPath := xmlpath.MustCompile("/xml/PicUrl")
+			msgBodyPath := xmlpath.MustCompile("/xml/MediaId")
 			msgBody, _ := msgBodyPath.String(content)
-			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "image", createTime)
+			msgMeta := make(map[string]string)
+			picUrlPath := xmlpath.MustCompile("/xml/PicUrl")
+			picUrl,_ := picUrlPath.String(content)
+			msgMeta["PicUrl"] = picUrl
+			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "image", createTime,msgMeta)
 			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		case "voice":
 			Utils.Logger.Println("Get a Voice Msg From", r.URL)
 			msgBodyPath := xmlpath.MustCompile("/xml/MediaId")
 			msgBody, _ := msgBodyPath.String(content)
-			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "voice", createTime)
+			msgMeta := make(map[string]string)
+			formatPath := xmlpath.MustCompile("/xml/Format")
+			format,_ := formatPath.String(content)
+			msgMeta["Format"] = format			
+			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "voice", createTime,msgMeta)
 			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		case "video":
 			Utils.Logger.Println("Get a Video Msg From", r.URL)
 			msgBodyPath := xmlpath.MustCompile("/xml/MediaId")
-			msgBody, _ := msgBodyPath.String(content)
-			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "voice", createTime)
+			msgBody, _ := msgBodyPath.String(content)			
+			msgMeta := make(map[string]string)
+			thumbMediaIdPath := xmlpath.MustCompile("/xml/ThumbMediaId")
+			thumbMediaId,_ := thumbMediaIdPath.String(content)
+			msgMeta["ThumbMediaId"] = thumbMediaId
+			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "voice", createTime,msgMeta)
 			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		case "shortvideo":
 			Utils.Logger.Println("Get a Short Video Msg From", r.URL)
 			msgBodyPath := xmlpath.MustCompile("/xml/MediaId")
 			msgBody, _ := msgBodyPath.String(content)
-			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "voice", createTime)
+			msgMeta := make(map[string]string)
+			thumbMediaIdPath := xmlpath.MustCompile("/xml/ThumbMediaId")
+			thumbMediaId,_ := thumbMediaIdPath.String(content)
+			msgMeta["ThumbMediaId"] = thumbMediaId
+			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "voice", createTime,msgMeta)
 			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		case "location":
 			Utils.Logger.Println("Get a Location Msg From", r.URL)
 			msgBodyPath := xmlpath.MustCompile("/xml/Label")
 			msgBody, _ := msgBodyPath.String(content)
-			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "Location", createTime)
+			msgMeta := make(map[string]string)
+			Location_XPath := xmlpath.MustCompile("/xml/Location_X")
+			Location_X,_ := Location_XPath.String(content)
+			msgMeta["Location_X"] = Location_X
+			Location_YPath := xmlpath.MustCompile("/xml/Location_Y")
+			Location_Y,_ := Location_YPath.String(content)
+			msgMeta["Location_Y"] = Location_Y
+			newMsg := Protocol.CreateMsg(msgBody, sender, wPP.GetName(), "Location", createTime,msgMeta)
 			Utils.Logger.Println(newMsg.GetMsgBody())
 			DataShare.MsgQ <- newMsg
 		default:
