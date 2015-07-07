@@ -3,7 +3,7 @@ package BabelProxy
 import (
 	"BabelProxy/Bots"
 	"BabelProxy/CCProvider"
-	_ "BabelProxy/DataShare"
+	"BabelProxy/DataShare"
 	"BabelProxy/PlatformProvider"
 	"BabelProxy/Protocol"
 	"BabelProxy/Utils"
@@ -20,7 +20,7 @@ type BabelProxy struct {
 	ip, port           string
 	cCProviderInstance CCProvider.CCProvider
 	// Interface is a pointer , so dont need to use interface pointer to get struct pointer
-	platformProviderInstanceList []PlatformProvider.PlatformProvider
+	platformProviderInstanceList map[string]PlatformProvider.PlatformProvider
 	meta                         map[string]string
 	bot                          Bots.Bot
 	contactRecordList            []Protocol.Contact
@@ -36,7 +36,17 @@ func (bp *BabelProxy) createContact() {
 
 //automachine to get msg from queue, pack it as Contact and send to different Provider
 func (bp *BabelProxy) processMsg() {
+	var msg *Protocol.Message
+	for {
+		msg = <-DataShare.MsgQ
+		Utils.Logger.Println("Get Msg From Queue, type ", msg.GetMsgType())
+		if msg.GetReceiver() == "wechat" {
+			Utils.Logger.Println("Call Sent to Wechat Provider to Handle")
+			bp.platformProviderInstanceList["wechat"].SendMsg(msg)
 
+		}
+
+	}
 }
 
 func (bp *BabelProxy) findContact(callId string) *Protocol.Contact {
@@ -73,9 +83,11 @@ func CreateProxy(f string) (*BabelProxy, error) {
 	var bp = &BabelProxy{}
 	bp.ip = viper.GetString("ip")
 	bp.port = viper.GetString("port")
-	bp.platformProviderInstanceList = make([]PlatformProvider.PlatformProvider, 0)
+	bp.platformProviderInstanceList = make(map[string]PlatformProvider.PlatformProvider)
 	wechatPlatformProvider, err := PlatformProvider.CreateWechatPlatformProvider("./wechat.json")
-	bp.platformProviderInstanceList = append(bp.platformProviderInstanceList, wechatPlatformProvider)
+	bp.platformProviderInstanceList[wechatPlatformProvider.GetName()] = wechatPlatformProvider
 	Utils.Logger.Println("Creating Proxy Finished")
+	go bp.processMsg()
+	Utils.Logger.Println("Processing Msg Start")
 	return bp, nil
 }
