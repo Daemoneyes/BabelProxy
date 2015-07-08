@@ -68,8 +68,8 @@ func (bp *BabelProxy) Run() {
 		url, _ := pp.GetMeta()["url"]
 		http.Handle(url, pp)
 	}
-	http.ListenAndServe("0.0.0.0:10000", nil)
-
+	err := http.ListenAndServe("0.0.0.0:10000", nil)
+	Utils.Logger.Println(err)
 }
 
 func CreateProxy(f string) (*BabelProxy, error) {
