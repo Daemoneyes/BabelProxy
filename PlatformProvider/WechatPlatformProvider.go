@@ -149,6 +149,14 @@ func (wPP *WechatPlatformProvider) UpdateToken() {
 }
 
 func (wPP *WechatPlatformProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	Utils.Logger.Println(r.Method)
+	if r.Method == "GET" {
+		echostr := r.URL.Query().Get("echostr")
+		Utils.Logger.Println("Register On Wechat Platform")
+		Utils.Logger.Println(echostr)
+		w.Write([]byte(echostr))
+		return
+	} 
 	content, err := xmlpath.Parse(r.Body)
 	if err != nil {
 		Utils.Logger.Println("Cann't Parse Message from ", r.URL)

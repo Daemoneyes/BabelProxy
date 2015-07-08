@@ -68,7 +68,7 @@ func (bp *BabelProxy) Run() {
 		url, _ := pp.GetMeta()["url"]
 		http.Handle(url, pp)
 	}
-	http.ListenAndServe("127.0.0.1:10000", nil)
+	http.ListenAndServe("0.0.0.0:10000", nil)
 
 }
 
