@@ -5,7 +5,7 @@ import (
 	"BabelProxy/Protocol"
 	"BabelProxy/Utils"
 	ejson "encoding/json"
-	"encoding/xml"
+	_"encoding/xml"
 	"errors"
 	_ "fmt"
 	json "github.com/bitly/go-simplejson"
@@ -16,16 +16,61 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"bytes"
 )
 
-type TextResponse struct {
-	XMLName      xml.Name `xml:"xml"`
-	ToUserName   string   `xml:"ToUserName"`
-	FromUserName string   `xml:"FromUserName"`
-	CreateTime   int64    `xml:"CreateTime"`
-	MsgType      string   `xml:"MsgType"`
-	Content      string   `xml:"Content"`
+//type TextResponse struct {
+//	XMLName      xml.Name `xml:"xml"`
+//	ToUserName   string   `xml:"ToUserName"`
+//	FromUserName string   `xml:"FromUserName"`
+//	CreateTime   int64    `xml:"CreateTime"`
+//	MsgType      string   `xml:"MsgType"`
+//	Content      string   `xml:"Content"`
+//}
+
+type TextFrame struct{
+	Content string `json:"content"`
 }
+
+type VoiceFrame struct{
+	MediaId string   `json:"media_id"`
+}
+
+
+type VideoFrame struct{
+	MediaId string `json:"media_id"`
+	ThumbMediaI string `json:"thumb_media_id"`
+	Title string `json:"title"`
+	Description string `json:"description"`	
+}
+
+
+type TextResponse struct{
+		ToUser string `json:"touser"`
+		MsgType string `json:"msgtype"`
+		Video TextFrame `json:"text"`
+		
+}
+
+
+type VoiceResponse struct{
+		ToUser string `json:"touser"`
+		MsgType string `json:"msgtype"`
+		Voice VoiceFrame `json:"voice"`
+		
+}
+
+
+type VideoResponse struct{
+		ToUser string `json:"touser"`
+		MsgType string `json:"msgtype"`
+		Video VideoFrame `json:"video"`
+		
+}
+
+
+
+
 
 type WechatPlatformProvider struct {
 	name string
@@ -45,44 +90,35 @@ func (wPP *WechatPlatformProvider) ReConfigure(f string) (bool, error) {
 }
 
 func (wPP *WechatPlatformProvider) SendMsg(msg *Protocol.Message) bool {
+	url := "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token="+wPP.GetMeta()["access_token"]
 	switch msg.GetMsgType() {
 	case "text":
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
+		tR := &TextResponse{msg.GetSender(),"text",TextFrame{msg.GetMsgBody()}}
 		Utils.Logger.Println(tR)
-		xmlstring, _ := xml.Marshal(tR)
 		jsonString, _ := ejson.Marshal(tR)
-		Utils.Logger.Println(string(xmlstring[:]))
-		Utils.Logger.Println(string(jsonString[:]))
+		Utils.Logger.Println("Json to Sent ",string(jsonString[:]))
+		resp,err := http.Post(url,"application/json",bytes.NewReader(jsonString))
+		if err != nil{
+			Utils.Logger.Println("Failed to Sent Package")
+
+		}
+		Utils.Logger.Println(resp.Body)
+
 		return true
 	case "image":
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
-		xmlstring, _ := xml.Marshal(tR)
-		Utils.Logger.Println(xmlstring)
+		tR := &TextResponse{msg.GetSender(),"text",TextFrame{msg.GetMsgBody()}}
+		Utils.Logger.Println(tR)
 		return true
 	case "voice":
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
-		xmlstring, _ := xml.Marshal(tR)
-		Utils.Logger.Println(xmlstring)
+		tR := &TextResponse{msg.GetSender(),"text",TextFrame{msg.GetMsgBody()}}
+		Utils.Logger.Println(tR)
 		return true
 	case "video":
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
-		xmlstring, _ := xml.Marshal(tR)
-		Utils.Logger.Println(xmlstring)
-		return true
-	case "news":
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
-		xmlstring, _ := xml.Marshal(tR)
-		Utils.Logger.Println(xmlstring)
-		return true
-	case "resp":
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
-		xmlstring, _ := xml.Marshal(tR)
-		Utils.Logger.Println(xmlstring)
+		tR := &TextResponse{msg.GetSender(),"text",TextFrame{msg.GetMsgBody()}}
+		Utils.Logger.Println(tR)
 		return true
 	default:
-		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
-		xmlstring, _ := xml.Marshal(tR)
-		Utils.Logger.Println(xmlstring)
+//		tR := &TextResponse{ToUserName: msg.GetSender(), FromUserName: wPP.GetMeta()["account"], CreateTime: time.Now().Unix(), MsgType: "text", Content: msg.GetMsgBody()}
 		return true
 
 	}
